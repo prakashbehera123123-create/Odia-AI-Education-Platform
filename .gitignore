@@ -79,3 +79,24 @@ tmp/
 # Mac/Linux hidden files
 
 .*.swp
+# Qdrant DB
+
+data/qdrant_db/
+
+# Embedding caches
+
+.cache/
+hf_cache/
+
+# Python cache
+
+**pycache**/
+
+# Vector DB artifacts
+
+*.lock
+*.sqlite
+
+# Torch / HF cache
+
+.huggingface/

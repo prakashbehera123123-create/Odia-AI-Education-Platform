@@ -1,70 +1,27 @@
-import re
+import argparse
 from pathlib import Path
 
-CLASS_NAME = "class_10"
-SUBJECT_NAME = "algebra"    
+from scripts.preprocessing.clean_text import clean_ocr_text, clean_pages
+from scripts.utils.logger import get_logger
 
-OCR_FOLDER = Path("data/ocr_text") / CLASS_NAME / SUBJECT_NAME /"pages"
-CLEANED_FOLDER = Path("data/cleaned_text") / CLASS_NAME / SUBJECT_NAME /"pages"
 
-def clean_ocr_text(text: str) -> str:
-    # Remove excessive spaces
-    text = re.sub(r"[ \t]+", " ", text)
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Clean OCR page text files.")
+    parser.add_argument("ocr_pages_folder", type=Path)
+    parser.add_argument("cleaned_pages_folder", type=Path)
+    parser.add_argument("--force", action="store_true")
+    return parser.parse_args()
 
-    # Remove excessive blank lines
-    text = re.sub(r"\n\s*\n+", "\n\n", text)
 
-    # Remove weird repeated symbols
-    text = re.sub(r"[|]{2,}", "|", text)
-    
-    # Remove excessive repeated dots
-    text = re.sub(r"\.{3,}", "...", text)
-    
-    # Normalize multiple hyphens
-    text = re.sub(r"-{2,}", "-", text)
-
-    # Fix broken spacing before punctuation
-    text = re.sub(r"\s+([।,:;!?])", r"\1", text)
-
-    # Remove invisible unicode artifacts
-    text = text.replace("\ufeff", "")
-
-    # Strip overall text
-    text = text.strip()
-
-    return text
-
-def clean_all_pages():
-
-    CLEANED_FOLDER.mkdir(parents=True, exist_ok=True)
-
-    page_files = sorted(OCR_FOLDER.glob("*.txt"))
-
-    if not page_files:
-        raise FileNotFoundError(
-            f"No OCR text files found in: {OCR_FOLDER}"
-        )
-
-    print(f"Reading OCR pages from: {OCR_FOLDER}")
-    print(f"Saving cleaned pages to: {CLEANED_FOLDER}")
-
-    for page_file in page_files:
-
-        print(f"Cleaning: {page_file.name}")
-
-        raw_text = page_file.read_text(encoding="utf-8")
-
-        cleaned_text = clean_ocr_text(raw_text)
-
-        output_file = CLEANED_FOLDER / page_file.name
-
-        output_file.write_text(
-            cleaned_text,
-            encoding="utf-8"
-        )
-
-    print("\nText cleaning completed.")
+def main() -> None:
+    args = parse_args()
+    clean_pages(
+        ocr_pages_folder=args.ocr_pages_folder,
+        cleaned_pages_folder=args.cleaned_pages_folder,
+        force=args.force,
+        logger=get_logger(),
+    )
 
 
 if __name__ == "__main__":
-    clean_all_pages()
+    main()

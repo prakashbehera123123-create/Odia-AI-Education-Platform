@@ -1,33 +1,32 @@
+import argparse
 from pathlib import Path
 
-import fitz  # PyMuPDF
+from configs.settings import PDF_DPI
+from scripts.ingestion.pdf_to_images import extract_pdf_pages
+from scripts.utils.logger import get_logger
 
 
-CLASS_NAME = "class_10"
-SUBJECT_NAME = "algebra"
-PDF_FILE = Path("data/raw_pdfs") / CLASS_NAME / "10th_Algebra.pdf"
-OUTPUT_FOLDER = Path("data/page_images") / CLASS_NAME / SUBJECT_NAME
-DPI = 300
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Extract PDF pages as images.")
+    parser.add_argument("pdf_file", type=Path)
+    parser.add_argument("output_folder", type=Path)
+    parser.add_argument("--dpi", type=int, default=PDF_DPI)
+    parser.add_argument("--force", action="store_true")
+    return parser.parse_args()
 
 
-def extract_pdf_pages(pdf_file: Path, output_folder: Path, dpi: int = DPI) -> None:
-    output_folder.mkdir(parents=True, exist_ok=True)
-
-    print(f"Extracting pages from: {pdf_file}")
-    print(f"Saving page images to: {output_folder}")
-
-    with fitz.open(pdf_file) as doc:
-        for page_index, page in enumerate(doc, start=1):
-            pix = page.get_pixmap(dpi=dpi)
-            image_path = output_folder / f"{pdf_file.stem}_page_{page_index:03d}.png"
-            pix.save(image_path)
-            print(f"Saved: {image_path}")
-
-    print("\nPDF page extraction completed.")
+def main() -> None:
+    args = parse_args()
+    if not args.pdf_file.exists():
+        raise FileNotFoundError(f"PDF file not found: {args.pdf_file}")
+    extract_pdf_pages(
+        pdf_file=args.pdf_file,
+        output_folder=args.output_folder,
+        dpi=args.dpi,
+        force=args.force,
+        logger=get_logger(),
+    )
 
 
 if __name__ == "__main__":
-    if not PDF_FILE.exists():
-        raise FileNotFoundError(f"PDF file not found: {PDF_FILE}")
-
-    extract_pdf_pages(PDF_FILE, OUTPUT_FOLDER)
+    main()
