@@ -1,0 +1,81 @@
+# Python
+
+**pycache**/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+
+.venv/
+venv/
+env/
+
+# IDE
+
+.vscode/
+.idea/
+
+# OS
+
+.DS_Store
+Thumbs.db
+
+# Logs
+
+*.log
+
+# Environment Variables
+
+.env
+
+# API Keys / Secrets
+
+secrets.json
+credentials.json
+*.pem
+*.key
+
+
+
+# Ignore complete data directory
+
+data/
+
+
+# Model Files
+
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# Pytest
+
+.pytest_cache/
+
+# Build
+
+dist/
+build/
+
+# Temporary Files
+
+temp/
+tmp/
+
+# FAISS Indexes
+
+*.faiss
+
+# SQLite
+
+*.db
+
+# Mac/Linux hidden files
+
+.*.swp
