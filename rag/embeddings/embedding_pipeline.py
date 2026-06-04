@@ -23,7 +23,7 @@ PAYLOAD_FIELDS = (
     "text",
 )
 
-
+# This script discovers all chunks.json files under the specified root directory, embeds the text of each chunk using the Embedder, and uploads the resulting vectors along with their metadata to a Qdrant collection. The point IDs are generated in a stable way based on the source file and chunk ID to ensure idempotency.
 def discover_chunk_files(chunk_root: Path) -> list[Path]:
     return sorted(chunk_root.rglob("chunks.json"))
 

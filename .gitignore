@@ -100,3 +100,9 @@ hf_cache/
 # Torch / HF cache
 
 .huggingface/
+
+__pycache__/
+*.pyc
+
+logs/
+*.log

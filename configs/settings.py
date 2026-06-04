@@ -1,6 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import os
 from pathlib import Path
 import shutil
+
+
+from dotenv import load_dotenv 
+
+load_dotenv(override=True)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -14,6 +20,8 @@ CHUNK_ROOT = DATA_ROOT / "chunks"
 META_DATA_ROOT = DATA_ROOT / "meta_data"
 TESSDATA_DIR = DATA_ROOT / "tessdata"
 QDRANT_DB_PATH = DATA_ROOT / "qdrant_db"
+LOG_DIR = PROJECT_ROOT / "logs"
+
 
 DEFAULT_WINDOWS_TESSERACT_PATH = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 TESSERACT_CMD = (
@@ -34,6 +42,15 @@ EMBEDDING_MODEL = "BAAI/bge-m3"
 VECTOR_DIMENSION = 1024
 COLLECTION_NAME = "odia_education_chunks"
 EMBEDDING_BATCH_SIZE = 16
+DEFAULT_RETRIEVAL_TOP_K = 5
+DEFAULT_RETRIEVAL_THRESHOLD = 0.50
+MEMORY_WINDOW = 5
+DEFAULT_MAX_CONTEXT_LENGTH = 6000
+DEFAULT_LLM_MODEL = "gpt-4o-mini"
+DEFAULT_LLM_TIMEOUT_SECONDS = 30.0
+DEFAULT_LLM_MAX_RETRIES = 2
+LOG_LEVEL = "INFO"
+
 
 
 @dataclass(frozen=True)
@@ -63,3 +80,30 @@ class EmbeddingSettings:
     vector_dimension: int = VECTOR_DIMENSION
     collection_name: str = COLLECTION_NAME
     embedding_batch_size: int = EMBEDDING_BATCH_SIZE
+
+
+@dataclass(frozen=True)
+class RetrievalSettings:
+    qdrant_db_path: Path = QDRANT_DB_PATH
+    embedding_model: str = EMBEDDING_MODEL
+    vector_dimension: int = VECTOR_DIMENSION
+    collection_name: str = COLLECTION_NAME
+    top_k: int = DEFAULT_RETRIEVAL_TOP_K
+    similarity_threshold: float = DEFAULT_RETRIEVAL_THRESHOLD
+
+
+@dataclass(frozen=True)
+class ContextSettings:
+    max_context_length: int = DEFAULT_MAX_CONTEXT_LENGTH
+
+
+@dataclass(frozen=True)
+class LLMSettings:
+    model_name: str = field(default_factory=lambda: os.getenv("OPENAI_MODEL", DEFAULT_LLM_MODEL))
+    api_key: str | None = field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
+    timeout_seconds: float = field(
+        default_factory=lambda: float(os.getenv("LLM_TIMEOUT_SECONDS", DEFAULT_LLM_TIMEOUT_SECONDS))
+    )
+    max_retries: int = field(default_factory=lambda: int(os.getenv("LLM_MAX_RETRIES", DEFAULT_LLM_MAX_RETRIES)))
+    
+    
