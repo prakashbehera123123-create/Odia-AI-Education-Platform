@@ -64,10 +64,17 @@ def discover_pdf_jobs(settings: PipelineSettings) -> list[PdfJob]:
 def build_metadata(job: PdfJob) -> dict:
     return {
         "class": job.class_name,
+        "board": "BSE Odisha",
         "subject": job.subject,
+        "language": "odia",
         "book": job.book,
         "chapter": None,
+        "chapter_number": None,
+        "chapter_name": None,
+        "section": None,
+        "subsection": None,
         "source_file": str(job.pdf_path),
+        "source_pdf": str(job.pdf_path),
     }
 
 

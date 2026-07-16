@@ -4,6 +4,8 @@ import shutil
 import subprocess
 
 from configs.settings import TESSDATA_DIR, TESSERACT_CMD, TESSERACT_CONFIG, TESSERACT_LANGUAGES
+from scripts.ingestion.metadata_extraction import PageMetadataState, build_page_object
+from scripts.preprocessing.clean_text import clean_ocr_text
 from scripts.utils.file_utils import write_text
 from scripts.utils.json_utils import save_json
 from scripts.utils.path_utils import ensure_dir, page_number_from_name
@@ -72,6 +74,7 @@ def extract_ocr_text(
     logger: logging.Logger | None = None,
 ) -> list[Path]:
     page_folder = ensure_dir(text_folder / "pages")
+    structured_page_folder = ensure_dir(text_folder / "structured_pages")
 
     images = sorted(image_folder.glob("*.png"), key=page_number_from_name)
     if not images:
@@ -86,10 +89,18 @@ def extract_ocr_text(
 
     combined_pages: list[str] = []
     page_outputs: list[Path] = []
+    structured_pages: list[dict] = []
+    metadata_state = PageMetadataState(
+        chapter_number=metadata.get("chapter_number") or metadata.get("chapter"),
+        chapter_name=metadata.get("chapter_name"),
+        section=metadata.get("section"),
+        subsection=metadata.get("subsection"),
+    )
 
     for image_path in images:
         page_number = page_number_from_name(image_path)
         page_output = page_folder / f"page_{page_number:03d}.txt"
+        structured_page_output = structured_page_folder / f"page_{page_number:03d}.json"
 
         if page_output.exists() and not force:
             page_text = page_output.read_text(encoding="utf-8").strip()
@@ -107,11 +118,29 @@ def extract_ocr_text(
             )
             write_text(page_output, page_text)
 
+        clean_text = clean_ocr_text(page_text)
+        structured_page, metadata_state = build_page_object(
+            text=clean_text,
+            page_number=page_number,
+            base_metadata=metadata,
+            previous_state=metadata_state,
+            ocr_languages=languages,
+            logger=logger,
+        )
+        if structured_page_output.exists() and not force:
+            if logger:
+                logger.info("Reusing structured OCR page %s", structured_page_output)
+        else:
+            save_json(structured_page, structured_page_output)
+
         combined_pages.append(f"===== PAGE {page_number} =====\n\n{page_text}")
         page_outputs.append(page_output)
+        structured_pages.append(structured_page)
 
     combined_output = text_folder / "full_text.txt"
+    structured_output = text_folder / "structured_pages.json"
     write_text(combined_output, "\n\n".join(combined_pages))
+    save_json(structured_pages, structured_output)
 
     ocr_metadata = {
         **metadata,
@@ -119,7 +148,9 @@ def extract_ocr_text(
         "total_pages": len(images),
         "source_folder": str(image_folder),
         "page_text_folder": str(page_folder),
+        "structured_page_folder": str(structured_page_folder),
         "combined_text_file": str(combined_output),
+        "structured_pages_file": str(structured_output),
     }
     save_json(ocr_metadata, text_folder / "metadata.json")
     return page_outputs

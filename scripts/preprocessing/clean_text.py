@@ -19,8 +19,8 @@ def clean_ocr_text(text: str) -> str:
     text = re.sub(r"-{2,}", "-", text)
     # Remove spaces before punctuation (e.g., "word ." -> "word.")
     text = re.sub(r"\s+([।,:;!?])", r"\1", text)
-    # Remove any remaining non-printable characters
-    text = re.sub(r"[^\x20-\x7E\n]", "", text)
+    # Remove control characters while preserving Unicode text such as Odia.
+    text = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", text)
     text = text.replace("\ufeff", "")
     return text.strip()
 

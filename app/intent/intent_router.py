@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
+from langsmith import traceable
 
 from app.llm.openai_service import OpenAIService
 from app.prompts import INTENT_ROUTER_SYSTEM_PROMPT
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class IntentRouter:
     """LLM-backed intent router with strict label normalization."""
-
+    
     def __init__(
         self,
         llm_service: OpenAIService | None = None,
@@ -21,7 +22,8 @@ class IntentRouter:
     ) -> None:
         self.llm_service = llm_service
         self.classifier = classifier
-
+        
+    @traceable(name="Intent Classification")
     def classify(self, query: str) -> str:
         if not query.strip():
             return "out_of_scope"

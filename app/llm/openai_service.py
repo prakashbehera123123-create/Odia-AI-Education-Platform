@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 from app.config.settings import LLMSettings
-
+from langsmith import traceable
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,8 @@ class OpenAIService:
 
         self.client = OpenAI(api_key=self.settings.api_key, max_retries=self.settings.max_retries)
         self.last_prompt_messages: list[dict[str, str]] = []
-
+        
+    @traceable(name="llm generation")
     def generate(
         self,
         system_prompt: str,

@@ -14,7 +14,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("image_folder", type=Path)
     parser.add_argument("text_folder", type=Path)
     parser.add_argument("--class-name", default="unknown_class")
+    parser.add_argument("--board", default="BSE Odisha")
     parser.add_argument("--subject", default="unknown_subject")
+    parser.add_argument("--language", default="odia")
     parser.add_argument("--book", default="unknown_book")
     parser.add_argument("--source-file", default="")
     parser.add_argument("--force", action="store_true")
@@ -28,10 +30,17 @@ def main() -> None:
         text_folder=args.text_folder,
         metadata={
             "class": args.class_name,
+            "board": args.board,
             "subject": args.subject,
+            "language": args.language,
             "book": args.book,
             "chapter": None,
+            "chapter_number": None,
+            "chapter_name": None,
+            "section": None,
+            "subsection": None,
             "source_file": args.source_file,
+            "source_pdf": args.source_file,
         },
         force=args.force,
         logger=get_logger(),

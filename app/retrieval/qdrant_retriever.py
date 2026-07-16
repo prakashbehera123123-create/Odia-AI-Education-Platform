@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from typing import Any
+from langsmith import traceable
 
 from app.config.settings import RetrievalSettings
 from rag.embeddings.embedder import Embedder
@@ -27,7 +28,9 @@ class QdrantRetriever:
             vector_dimension=self.settings.vector_dimension,
         )
         self.last_debug: dict[str, Any] = {}
-
+        
+    
+    @traceable(name = "retriver time")
     def retrieve(self, query: str, top_k: int | None = None) -> list[dict[str, Any]]:
         clean_query = self._clean_query(query)
         try:

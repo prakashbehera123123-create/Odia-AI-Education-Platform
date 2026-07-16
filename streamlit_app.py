@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import uuid
 import os
-
 import streamlit as st
-
 from configs.settings import EmbeddingSettings, RetrievalSettings
 from rag.logging_config import configure_logging
 from app.orchestrator import QueryOrchestrator

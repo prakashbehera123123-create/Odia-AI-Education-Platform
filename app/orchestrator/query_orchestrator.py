@@ -1,14 +1,13 @@
 from __future__ import annotations
-
 import logging
 from typing import Any
-
 from app.handlers import ConversationalHandler, EducationalHandler, GreetingHandler
 from app.intent.intent_router import IntentRouter
 from app.llm.openai_service import OpenAIService
 from app.models import QueryResult
 from app.retrieval.qdrant_retriever import QdrantRetriever
 from rag.logging_config import configure_logging
+from langsmith import traceable
 
 
 configure_logging()
@@ -33,7 +32,7 @@ class QueryOrchestrator:
         self.educational_handler = educational_handler or EducationalHandler(self.retriever, self.llm_service)
         self.conversational_handler = conversational_handler or ConversationalHandler(self.llm_service)
         self.greeting_handler = greeting_handler or GreetingHandler()
-
+    @traceable(name = "query orchestrator")
     def ask(
         self,
         query: str,
